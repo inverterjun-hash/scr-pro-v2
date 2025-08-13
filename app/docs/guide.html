@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8">
+<title>SCR 계산기 Pro — 가이드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.min.css">
+<style>body{max-width:980px} code,pre{white-space:pre-wrap}</style>
+<h1>SCR 계산기 Pro — 설계 가이드</h1>
+<p>본 앱은 그리드포밍/그리드팔로잉 인버터의 <b>SCCR</b>(Short-Circuit Ratio) 분석과 선로 임피던스 산출, 운전점(P–δ) 검토를 빠르게 수행하도록 설계되었습니다.</p>
+<h2>핵심 공식</h2>
+<pre>S_sc = V_LL² / |Z_th|
+SCR  = S_sc / S_n
+
+P(δ) = (V_LL²/|Z|) [cos(θ − δ) − cos(θ)],  θ = atan(X/R)
+</pre>
+<h2>목표 SCR → 선로 RL</h2>
+<p>A=ρ²+ω², B=2(R_trρ+ω²L_tr), C=R_tr²+(ωL_tr)²−|Z_t|², |Z_t|=V_LL²/(SCR·S_n).<br>
+해(양의 L)가 존재하면 L_line=min(L₁,L₂), R_line=ρ·L_line.</p>
+<h2>한계선</h2>
+<ul>
+<li>I_max: |E−V|/|Z| ≥ I_max → δ_lim</li>
+<li>ΔV%: 2V·sin(δ/2) ≥ ΔV_lim → δ_lim</li>
+</ul>
+<h2>pu 입력</h2>
+<p>pu를 켜면 R=pu·Z_base, L=pu·L_base. Z_base=V_LL²/S_n, L_base=Z_base/ω.</p>
+<h2>사용 팁</h2>
+<ol>
+<li>380/400/480 V 프리셋으로 시작 → 변압기 값/목표 SCR 입력</li>
+<li>I_max/ΔV%를 넣고 P–δ 한계를 즉시 확인</li>
+<li>δ‑스윕을 CSV로 저장해 보고서에 첨부</li>
+</ol>

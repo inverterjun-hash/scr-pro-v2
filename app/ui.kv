@@ -1,0 +1,281 @@
+#:kivy 2.2.1
+#:import MDFillRoundFlatIconButton kivymd.uix.button.MDFillRoundFlatIconButton
+#:import MDIconButton kivymd.uix.button.MDIconButton
+#:import Factory kivy.factory.Factory
+#:import MDLabel kivymd.uix.label.MDLabel
+
+<SectionCard@MDCard>:
+    padding: "14dp"
+    spacing: "10dp"
+    radius: 12
+    md_bg_color: app.theme_cls.bg_light if app.theme_cls.theme_style == "Light" else app.theme_cls.bg_dark
+    elevation: 2
+
+<ContentTab@BoxLayout+MDTabsBase>:
+    orientation: "vertical"
+    padding: "12dp"
+    spacing: "12dp"
+
+BoxLayout:
+    orientation: "vertical"
+    MDTopAppBar:
+        id: tb
+        title: "SCR 계산기 Pro v2"
+        elevation: 4
+        left_action_items: [["menu", lambda x: app.open_guide()]]
+        right_action_items: [["theme-light-dark", lambda x: app.toggle_theme()], ["content-save", lambda x: app.export_csv()], ["file-export", lambda x: app.export_html()]]
+    MDTabs:
+        id: tabs
+
+        ContentTab:
+            title: "계산"
+            SectionCard:
+                MDGridLayout:
+                    cols: 2
+                    adaptive_height: True
+                    spacing: "8dp"
+                    MDTextField:
+                        id:vll
+                        text: app.V_LL
+                        hint_text: "V_LL [V] (예: 380, 0.38kV)"
+                        input_filter: "float"
+                    MDTextField:
+                        id:sn
+                        text: app.S_n
+                        hint_text: "S_n [VA] (예: 250kVA)"
+                        input_filter: "float"
+                    MDTextField:
+                        id:f
+                        text: app.f_hz
+                        hint_text: "주파수 f [Hz]"
+                        input_filter: "float"
+                    MDCheckbox:
+                        id:pu_flag
+                        active: app.pu_mode
+                        on_active: app.set_pu(self.active)
+                    MDLabel:
+                        text: "pu 입력"
+                        halign: "left"
+                SectionCard:
+                    MDLabel:
+                        text: "선로 (직접 R/L + 단위 인식, 예: 50mΩ, 75uH)"
+                        bold: True
+                    MDGridLayout:
+                        cols: 2
+                        MDTextField:
+                            id:r_line
+                            text: app.R_line
+                            hint_text: "R_line [Ω/상]"
+                        MDTextField:
+                            id:l_line
+                            text: app.L_line
+                            hint_text: "L_line [H/상]"
+                SectionCard:
+                    MDLabel:
+                        text: "변압기 (선택)"
+                        bold: True
+                    MDGridLayout:
+                        cols: 2
+                        MDTextField:
+                            id:r_tr
+                            text: app.R_tr
+                            hint_text: "R_tr [Ω/상]"
+                        MDTextField:
+                            id:l_tr
+                            text: app.L_tr
+                            hint_text: "L_tr [H/상]"
+                MDBoxLayout:
+                    adaptive_height: True
+                    spacing: "8dp"
+                    MDFillRoundFlatIconButton:
+                        text: "SCR 계산"
+                        icon: "sigma"
+                        on_release: app.calc_scr(vll.text, sn.text, f.text, r_line.text, l_line.text, r_tr.text, l_tr.text)
+                    MDFillRoundFlatIconButton:
+                        text: "복사"
+                        icon: "content-copy"
+                        on_release: app.copy_result('scr')
+
+                ScrollView:
+                    MDTextField:
+                        id:out1
+                        text: app.scr_summary
+                        multiline: True
+                        readonly: True
+                        size_hint_y: None
+                        height: max(self.minimum_height, dp(200))
+
+        ContentTab:
+            title: "선로 RL"
+            SectionCard:
+                MDGridLayout:
+                    cols: 3
+                    adaptive_height: True
+                    MDTextField:
+                        id:vll2
+                        text: app.V_LL
+                        hint_text: "V_LL [V]"
+                    MDTextField:
+                        id:sn2
+                        text: app.S_n
+                        hint_text: "S_n [VA]"
+                    MDTextField:
+                        id:f2
+                        text: app.f_hz
+                        hint_text: "f [Hz]"
+                SectionCard:
+                    MDGridLayout:
+                        cols: 3
+                        adaptive_height: True
+                        MDTextField:
+                            id:target_scr
+                            text: app.target_scr
+                            hint_text: "목표 SCR"
+                        MDTextField:
+                            id:r_over_l
+                            text: app.r_over_l
+                            hint_text: "R/L [Ω/H]"
+                        MDLabel:
+                            text: "변압기 R/L 아래 입력"
+                SectionCard:
+                    MDGridLayout:
+                        cols: 2
+                        MDTextField:
+                            id:r_tr2
+                            text: app.R_tr
+                            hint_text: "R_tr [Ω/상]"
+                        MDTextField:
+                            id:l_tr2
+                            text: app.L_tr
+                            hint_text: "L_tr [H/상]"
+                MDBoxLayout:
+                    adaptive_height: True
+                    spacing: "8dp"
+                    MDFillRoundFlatIconButton:
+                        text: "선로 RL 산출"
+                        icon: "calculator"
+                        on_release: app.calc_line(vll2.text, sn2.text, f2.text, target_scr.text, r_over_l.text, r_tr2.text, l_tr2.text)
+                    MDFillRoundFlatIconButton:
+                        text: "복사"
+                        icon: "content-copy"
+                        on_release: app.copy_result('line')
+                ScrollView:
+                    MDTextField:
+                        id:out2
+                        text: app.line_summary
+                        multiline: True
+                        readonly: True
+                        size_hint_y: None
+                        height: max(self.minimum_height, dp(200))
+
+        ContentTab:
+            title: "시각화"
+            SectionCard:
+                MDGridLayout:
+                    cols: 4
+                    adaptive_height: True
+                    MDTextField:
+                        id:p_kw
+                        text: app.P_kW
+                        hint_text: "P [kW]"
+                    MDTextField:
+                        id:delta_deg
+                        text: app.delta_deg
+                        hint_text: "δ [deg] (또는 P 입력)"
+                    MDTextField:
+                        id:Imax
+                        text: app.I_max
+                        hint_text: "I_max [A]"
+                    MDTextField:
+                        id:Vdp
+                        text: app.V_drop_pct
+                        hint_text: "ΔV_max [%]"
+                MDFillRoundFlatIconButton:
+                    text: "계산 & 플롯"
+                    icon: "chart-line"
+                    on_release: app.visualize(p_kw.text, delta_deg.text, Imax.text, Vdp.text)
+                MDLabel:
+                    id:vis_summary
+                    text: app.vis_summary
+                    size_hint_y: None
+                    height: self.texture_size[1] + dp(10)
+                BoxLayout:
+                    id:plot_area
+                    orientation: "vertical"
+                    size_hint_y: 1
+
+        ContentTab:
+            title: "δ-스윕"
+            SectionCard:
+                MDGridLayout:
+                    cols: 4
+                    MDTextField:
+                        id:dmax
+                        text: app.sweep_deg_max
+                        hint_text: "δ_max [deg]"
+                    MDTextField:
+                        id:step
+                        text: app.sweep_step
+                        hint_text: "step [deg]"
+                    MDFillRoundFlatIconButton:
+                        text: "스윕 실행"
+                        icon: "play-circle"
+                        on_release: app.run_sweep(dmax.text, step.text)
+                    MDFillRoundFlatIconButton:
+                        text: "CSV 저장"
+                        icon: "file-delimited"
+                        on_release: app.save_sweep_csv()
+            ScrollView:
+                MDTextField:
+                    id:sweep_out
+                    text: app.sweep_summary
+                    multiline: True
+                    readonly: True
+                    size_hint_y: None
+                    height: max(self.minimum_height, dp(260))
+
+        ContentTab:
+            title: "프리셋"
+            SectionCard:
+                MDGridLayout:
+                    cols: 3
+                    MDTextField:
+                        id:preset_name
+                        hint_text: "이름"
+                    MDFillRoundFlatIconButton:
+                        text: "현재 저장"
+                        icon: "content-save"
+                        on_release: app.save_preset(preset_name.text)
+                    MDFillRoundFlatIconButton:
+                        text: "기본 불러오기"
+                        icon: "refresh"
+                        on_release: app.load_default_presets()
+            ScrollView:
+                MDTextField:
+                    id:preset_out
+                    text: app.presets_summary
+                    multiline: True
+                    readonly: True
+                    size_hint_y: None
+                    height: max(self.minimum_height, dp(260))
+
+        ContentTab:
+            title: "로그"
+            MDBoxLayout:
+                adaptive_height: True
+                MDFillRoundFlatIconButton:
+                    text: "초기화"
+                    icon: "broom"
+                    on_release: app.clear_log()
+                MDFillRoundFlatIconButton:
+                    text: "복사"
+                    icon: "content-copy"
+                    on_release: app.copy_log()
+            ScrollView:
+                MDTextField:
+                    id:logbox
+                    text: app.log_text
+                    multiline: True
+                    readonly: True
+                    size_hint_y: None
+                    height: max(self.minimum_height, dp(260))

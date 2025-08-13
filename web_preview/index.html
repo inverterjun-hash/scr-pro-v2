@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8">
+<title>SCR Pro v2 — Web Preview</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.min.css">
+<style>body{max-width:900px} .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} canvas{max-width:100%} pre{white-space:pre-wrap}</style>
+<h1>SCR 계산기 Pro v2 — Web Preview</h1>
+<p>앱과 동일한 공식/로직으로 동작합니다. 단위 인식: 50mΩ, 75uH, 0.38kV, 250kVA.</p>
+<div class="grid">
+  <div>
+    <h3>입력</h3>
+    <label>V_LL <input id="VLL" value="380"></label>
+    <label>S_n <input id="Sn" value="250kVA"></label>
+    <label>f [Hz] <input id="f" value="60"></label>
+    <label>R_line <input id="Rline" value="0"></label>
+    <label>L_line <input id="Lline" value="75uH"></label>
+    <label>R_tr <input id="Rtr" value="0"></label>
+    <label>L_tr <input id="Ltr" value="0"></label>
+    <button onclick="calc()">SCR 계산</button>
+  </div>
+  <pre id="out">여기에 결과가 표시됩니다.</pre>
+</div>
+<canvas id="chart" height="240"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+function parseV(s){s=s.toLowerCase();let v=parseFloat(s); if(s.includes('kv')) v*=1e3; if(s.includes('kva')) v*=1e3; if(s.includes('mva')) v*=1e6; if(s.includes('uh')) v*=1e-6; if(s.includes('mh')) v*=1e-3; if(s.includes('mw')) v*=1e6; if(s.includes('kw')) v*=1e3; return v;}
+function Zmag(R,L,w){return Math.hypot(R, w*L)}
+function calc(){
+  const VLL=parseV(V("VLL")); const Sn=parseV(V("Sn")); const f=parseV(V("f"));
+  const Rl=parseV(V("Rline")); const Ll=parseV(V("Lline"));
+  const Rtr=parseV(V("Rtr"));   const Ltr=parseV(V("Ltr"));
+  const w=2*Math.PI*f;
+  const Z=Zmag(Rl+Rtr, Ll+Ltr, w); const S=(VLL*VLL)/Z; const SCR=S/Sn;
+  const Ir=Sn/(Math.sqrt(3)*VLL), Isc=S/(Math.sqrt(3)*VLL);
+  O("out",`|Z_th|=${Z.toFixed(6)} Ω/상\nS_sc=${(S/1e6).toFixed(3)} MVA\nSCR=${SCR.toFixed(3)}\nI_sc/I_r=${(Isc/Ir).toFixed(3)}`);
+  // plot
+  const R=Rl+Rtr; const X=w*(Ll+Ltr); const Zabs=Math.hypot(R,X); const theta=Math.atan2(X,R);
+  const degMax=Math.min(theta*180/Math.PI, 89.9); const xs=[], ys=[]; for(let d=0;d<=degMax;d+=0.2){const rad=d*Math.PI/180; const P=(VLL*VLL/Zabs)*(Math.cos(theta-rad)-Math.cos(theta)); xs.push(d); ys.push(P/1e6);}
+  const ctx=document.getElementById('chart'); new Chart(ctx,{type:'line',data:{labels:xs,datasets:[{label:'P(δ)[MW]',data:ys,tension:0.1}]}});
+}
+function V(id){return document.getElementById(id).value} function O(id,msg){document.getElementById(id).textContent=msg}
+</script>
